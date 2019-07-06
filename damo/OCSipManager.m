@@ -1,23 +1,24 @@
 //
-//  demo.c
-//  Hello
+//  OCSipManager.m
+//  damo
 //
-//  Created by bluefish on 2019/6/30.
-//  Copyright © 2019 bluefish. All rights reserved.
+//  Created by systec on 2019/7/6.
+//  Copyright © 2019 systec. All rights reserved.
 //
 
-
-#include "demo.h"
+#import "OCSipManager.h"
 
 #define THIS_FILE "demo"
 
-pjsua_acc_id account_id;
+@interface OCSipManager()
 
-void (^incoming_call)(int acc_id, int call_id) = NULL;
+@property (nonatomic, assign) pjsua_acc_id account_id;
 
-void CFuncTest(int acc_id, int call_id){
-    incoming_call(acc_id, call_id);
-}
+@property (nonatomic, assign) pjsua_call_id call_id;
+
+@end
+
+@implementation OCSipManager
 
 static void on_reg_state2(pjsua_acc_id acc_id, pjsua_reg_info *info) {
     if(info->renew != 0)
@@ -46,54 +47,65 @@ static void on_reg_state2(pjsua_acc_id acc_id, pjsua_reg_info *info) {
 
 static void on_incoming_call(pjsua_acc_id acc_id, pjsua_call_id call_id, pjsip_rx_data *rdata) {
     pjsua_call_info ci;
-
+    
     PJ_UNUSED_ARG(acc_id);
     PJ_UNUSED_ARG(rdata);
-
+    
     pjsua_call_get_info(call_id, &ci);
-
+    
     PJ_LOG(3,(THIS_FILE, "Incoming call from %.*s!!", (int)ci.remote_info.slen, ci.remote_info.ptr));
-
-  /* Automatically answer incoming calls with 200/OK */
-//  pjsua_call_answer(call_id, 200, NULL, NULL);
+    
+    /* Automatically answer incoming calls with 200/OK */
+    //  pjsua_call_answer(call_id, 200, NULL, NULL);
     printf("call_id=%d\n",call_id);
-    CFuncTest(acc_id, call_id);
+    
 }
 
 /* Callback called by the library when call's state has changed */
 static void on_call_state(pjsua_call_id call_id, pjsip_event *e) {
-  pjsua_call_info ci;
-
-  PJ_UNUSED_ARG(e);
-
-  pjsua_call_get_info(call_id, &ci);
-  PJ_LOG(3,(THIS_FILE, "Call %d state=%.*s", call_id, (int)ci.state_text.slen, ci.state_text.ptr));
+    pjsua_call_info ci;
+    
+    PJ_UNUSED_ARG(e);
+    
+    pjsua_call_get_info(call_id, &ci);
+    PJ_LOG(3,(THIS_FILE, "Call %d state=%.*s", call_id, (int)ci.state_text.slen, ci.state_text.ptr));
 }
 
 /* Callback called by the library when call's media state has changed */
 static void on_call_media_state(pjsua_call_id call_id) {
-  pjsua_call_info ci;
-
-  pjsua_call_get_info(call_id, &ci);
-
-  if (ci.media_status == PJSUA_CALL_MEDIA_ACTIVE) {
-      // When media is active, connect call to sound device.
-      pjsua_conf_connect(ci.conf_slot, 0);
-      pjsua_conf_connect(0, ci.conf_slot);
-  }
+    pjsua_call_info ci;
+    
+    pjsua_call_get_info(call_id, &ci);
+    
+    if (ci.media_status == PJSUA_CALL_MEDIA_ACTIVE) {
+        // When media is active, connect call to sound device.
+        pjsua_conf_connect(ci.conf_slot, 0);
+        pjsua_conf_connect(0, ci.conf_slot);
+    }
 }
 
 /* Display error and exit application */
 static void error_exit(const char *title, pj_status_t status)
 {
     pjsua_perror(THIS_FILE, title, status);
-//    pjsua_destroy();
-//    exit(1);
+    //    pjsua_destroy();
+    //    exit(1);
+}
+
+
++(instancetype)PjsipManager
+{
+    static OCSipManager *sipManager;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        sipManager = [[self alloc] init];
+    });
+    return sipManager;
 }
 
 //初始化pjsip
-int init_pjsip(){
-
++(BOOL)initPjsip{
+    
     pj_status_t status;
     
     //注册线程
@@ -107,7 +119,7 @@ int init_pjsip(){
         if(status != PJ_SUCCESS)
         {
             error_exit("thread registration failed", status);
-            return 1;
+            return false;
         }
     }
     
@@ -115,7 +127,7 @@ int init_pjsip(){
     if(status != PJ_SUCCESS)
     {
         error_exit("destroy failed", status);
-        return 1;
+        return false;
     }
     
     /* Create pjsua first! */
@@ -123,7 +135,7 @@ int init_pjsip(){
     if (status != PJ_SUCCESS)
     {
         error_exit("Error in pjsua_create()", status);
-        return 1;
+        return false;
     }
     else
     {
@@ -146,15 +158,15 @@ int init_pjsip(){
             if (status != PJ_SUCCESS)
             {
                 error_exit("Error in pjsua_init()", status);
-                return 1;
+                return false;
             }
         }
     }
-    return 0;
+    return true;
 }
 
 //注册pjsip
-int account_registered(char *sip_domain, char *sip_user, char *sip_passwd)
+-(BOOL)domain:(char *)sip_domain user:(char *)sip_user passwd:(char *)sip_passwd
 {
     pj_status_t status;
     /* Add UDP transport. */
@@ -167,7 +179,7 @@ int account_registered(char *sip_domain, char *sip_user, char *sip_passwd)
         if (status != PJ_SUCCESS)
         {
             error_exit("Error creating transport", status);
-            return 1;
+            return false;
         }
     }
     
@@ -176,12 +188,12 @@ int account_registered(char *sip_domain, char *sip_user, char *sip_passwd)
     if (status != PJ_SUCCESS)
     {
         error_exit("Error starting pjsua", status);
-        return 1;
+        return false;
     }
     /* Register to SIP server by creating SIP account. */
     {
         pjsua_acc_config cfg;
-    
+        
         //        cfg.cred_info[0].realm = pj_str(SIP_DOMAIN);
         
         pjsua_acc_config_default(&cfg);
@@ -199,7 +211,7 @@ int account_registered(char *sip_domain, char *sip_user, char *sip_passwd)
         cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
         cfg.cred_info[0].data = pj_str(sip_passwd);
         
-        status = pjsua_acc_add(&cfg, PJ_TRUE, &account_id);
+        status = pjsua_acc_add(&cfg, PJ_TRUE, &_account_id);
         
         if (status != PJ_SUCCESS)
         {
@@ -210,26 +222,26 @@ int account_registered(char *sip_domain, char *sip_user, char *sip_passwd)
     return 0;
 }
 
-int account_unregistered()
+-(BOOL)accountUnregistered
 {
     pj_status_t status;
     
-    status = pjsua_acc_del(account_id);
+    status = pjsua_acc_del(_account_id);
     
     if (status != PJ_SUCCESS)
     {
         error_exit("Error deleting account", status);
-        return 1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
 //挂断电话
-void hang_up_call()
+-(void)hangupCall
 {
     //获取账户信息
     pjsua_call_info info;
-    pjsua_call_get_info(account_id, &info);
+    pjsua_call_get_info(_account_id, &info);
     
     if(info.media_status == PJSUA_CALL_MEDIA_ACTIVE)
     {
@@ -237,19 +249,22 @@ void hang_up_call()
     }
 }
 // 销毁pjsip
-int destroy_pjsip(){
+-(BOOL)destroyPjsip
+{
     pj_status_t status;
     /* Destroy pjsua */
     status = pjsua_destroy();
     if(status != PJ_SUCCESS)
     {
         error_exit("destroy failed", status);
-        return 1;
+        return false;
     }
-    return 0;
+    return true;
 }
 
-void make_call(char* name, char* sip_id, char* sip_server){
+-(BOOL)devName:(char*) name devSipId:(char*) sip_id sipServer:(char*)sip_server
+{
+    
     pj_status_t status;
     /* If URL is specified, make call to the URL. */
     char sip_uri[80];
@@ -257,35 +272,18 @@ void make_call(char* name, char* sip_id, char* sip_server){
     pj_str_t uri = pj_str(sip_uri);
     pjsua_call_setting call_set;
     pjsua_call_setting_default(&call_set);
-    status = pjsua_call_make_call(account_id, &uri, &call_set, NULL, NULL, NULL);
+    status = pjsua_call_make_call(_account_id, &uri, &call_set, NULL, NULL, NULL);
     if (status != PJ_SUCCESS)
+    {
         error_exit("Error making call", status);
-}
-
-void answer(pjsua_call_id call_id){
-    pjsua_call_answer(call_id, 200, NULL, NULL);
-}
-
-void handle_sip(UASTATE state){
-    switch (state) {
-        case CTL_ACC_REGISTER:
-            init_pjsip();
-            break;
-        case CTL_MAKE_CALL:
-            break;
-        default:
-            break;
+        return false;
     }
+    return true;
 }
 
-char* str(char* str1, char* str2){
-    char *p=str1, n=0;
-    while(*p++ != '\0');
-    --p;
-    while (str2[n] != '\0') {
-        *p++ =str2[n];
-        ++n;
-    }
-    *p='\0';
-    return p;
+-(void)answerCall{
+    pjsua_call_answer(_call_id, 200, NULL, NULL);
 }
+
+@end
+

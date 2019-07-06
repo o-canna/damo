@@ -3,3 +3,7 @@
 //
 
 #include "demo.h"
+#include "OCSipManager.h"
+
+extern void (^ __nonnull incoming_call)(int acc_id, int call_id);
+extern void CFuncTest(int acc_id, int call_id);

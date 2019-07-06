@@ -36,6 +36,7 @@
 		94F35A5422CC57D100437397 /* libsrtp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 94F35A3F22CC57D100437397 /* libsrtp.a */; };
 		94F35A5822CC580E00437397 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94F35A5722CC580E00437397 /* AudioToolbox.framework */; };
 		94F35A5922CC582800437397 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 94F35A5522CC57FB00437397 /* AVFoundation.framework */; };
+		94F35A7122D06CA000437397 /* OCSipManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 94F35A7022D06CA000437397 /* OCSipManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -72,6 +73,8 @@
 		94F35A3F22CC57D100437397 /* libsrtp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsrtp.a; path = "../pjsip-ios/output/target/lib/libsrtp.a"; sourceTree = "<group>"; };
 		94F35A5522CC57FB00437397 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		94F35A5722CC580E00437397 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		94F35A6F22D06CA000437397 /* OCSipManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OCSipManager.h; sourceTree = "<group>"; };
+		94F35A7022D06CA000437397 /* OCSipManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = OCSipManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,10 +136,12 @@
 				94F35A0E22CC550700437397 /* AppDelegate.swift */,
 				94F35A1022CC550700437397 /* ViewController.swift */,
 				94F35A1222CC550700437397 /* Main.storyboard */,
-				94F35A1522CC550800437397 /* Assets.xcassets */,
 				94F35A1722CC550800437397 /* LaunchScreen.storyboard */,
+				94F35A1522CC550800437397 /* Assets.xcassets */,
 				94F35A1A22CC550800437397 /* Info.plist */,
 				94F35A2622CC564A00437397 /* damo-Bridging-Header.h */,
+				94F35A6F22D06CA000437397 /* OCSipManager.h */,
+				94F35A7022D06CA000437397 /* OCSipManager.m */,
 			);
 			path = damo;
 			sourceTree = "<group>";
@@ -251,6 +256,7 @@
 				94F35A1122CC550700437397 /* ViewController.swift in Sources */,
 				94F35A2922CC564A00437397 /* demo.c in Sources */,
 				94F35A0F22CC550700437397 /* AppDelegate.swift in Sources */,
+				94F35A7122D06CA000437397 /* OCSipManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
